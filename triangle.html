@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>△△きまぐれ三角定規△△</title>
+  <style>
+    body {
+      font-family: "Rounded Mplus 1c", "Hiragino Maru Gothic ProN", sans-serif;
+      text-align: center;
+      margin-top: 40px;
+      background: linear-gradient(135deg, #edfafc, #f9fcfd);
+    }
+
+    h1 {
+      color: #4DB7FF;
+      text-shadow: 1px 1px 0 white;
+      font-size: 4em;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #4DB7FF;
+      text-shadow: 1px 1px 0 white;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    svg {
+      width: 480px;
+      height: 480px;
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(120, 180, 255, 0.3);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      margin: 10px;
+      font-size: 18px;
+      border-radius: 12px;
+      background: #DFF2FF;
+      border: 2px solid #7CCBFF;
+      box-shadow: 0 3px 0 #7CCBFF;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .btn:active {
+      box-shadow: none;
+      transform: translateY(3px);
+    }
+
+    #timer{
+      color: #4DB7FF;
+      text-shadow: 1px 1px 0 white;
+      font-size: 2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>△△きまぐれ三角定規△△</h1>
+  <h2>最も短い辺の長さを1とするとき、色のついた辺の長さを答えなさい。</h2>
+  <table style="margin: 0 auto;">
+    <tr>
+      <td>
+        <svg id="tri" viewBox="-300 -300 600 600"></svg>
+      </td>
+      <td style="text-align: center;">
+        <button id="start" class="btn" onclick="startGame()">スタート</button>
+        <div>あと<span id="timer">60</span>秒</div>
+        <div id="result">　</div>
+        <div id="choices">
+          <button class="btn" onclick="checkAnswer('1');">1</button><br>
+          <button class="btn" onclick="checkAnswer('2');">2</button><br>
+          <button class="btn" onclick="checkAnswer('√2');">√2</button><br>
+          <button class="btn" onclick="checkAnswer('√3');">√3</button>
+        </div>
+      </td>
+    </tr>
+  </table>
+  <p id="answer"></p>
+
+  <script>
+    const COLOR_MAIN = "#4DB7FF";
+    const COLOR_SUB = "#AFCBEF";
+    const TRI_SIZE = 200;
+    const patterns = [
+      { answer:  "1", type: "45", red: "short" },
+      { answer:  "1", type: "30", red: "short" },
+      { answer: "√2", type: "45", red:   "hyp" },
+      { answer: "√3", type: "30", red:  "long" },
+      { answer:  "2", type: "30", red:   "hyp" }
+    ];
+    let angle = Math.floor(Math.random() * 360);
+    let score = 0;
+    let miss = 0;
+    let timeLeft = 60;
+    let timerId;
+
+    // 開始
+    function startGame() {
+      score = 0;
+      miss = 0;
+      timeLeft = 60;
+      document.getElementById("result").textContent = "　";
+      document.getElementById("start").style.visibility = "hidden";
+      startTimer();
+      generate();
+    }
+
+    // タイマー
+    function startTimer() {
+      timerId = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerId);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    // 正誤判定
+    function checkAnswer(selected) {
+      if (selected === document.getElementById("tri").dataset.answer) {
+        score++;
+        playCorrect();
+        generate();
+      } else {
+        miss++;
+        playWrong();
+      }
+    }
+
+    // 終了
+    function endGame() {
+      document.getElementById("result").innerHTML =
+        `　正答： ${score} 　　誤答： ${miss}　`;
+      document.getElementById("tri").innerHTML = "";
+      document.getElementById("tri").dataset.answer = "";
+      document.getElementById("start").style.visibility = "visible";
+    }
+
+    // 問題生成
+    function generate() {
+      const svg = document.getElementById("tri");
+      svg.innerHTML = "";
+      document.getElementById("answer").textContent = "";
+      const gShape = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const gLabel = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      svg.appendChild(gShape);
+      svg.appendChild(gLabel);
+      if (!window.lastAnswer) window.lastAnswer = null;
+      const candidates = patterns.filter(p => p.answer !== window.lastAnswer);
+      const pat = candidates[Math.floor(Math.random() * candidates.length)];
+      window.lastAnswer = pat.answer;
+      let a, b, angles;
+      if (pat.type === "45") {
+        a = TRI_SIZE;
+        b = TRI_SIZE;
+        angles = ["45°", "45°"];
+      } else {
+        a = TRI_SIZE;
+        b = TRI_SIZE * Math.sqrt(3);
+        angles = ["30°", "60°"];
+      }
+      const p0 = { x: 0, y: 0 };
+      const p1 = { x: a, y: 0 };
+      const p2 = { x: 0, y: b };
+      const cx = (p0.x + p1.x + p2.x) / 3;
+      const cy = (p0.y + p1.y + p2.y) / 3;
+      const q0 = { x: p0.x - cx, y: p0.y - cy };
+      const q1 = { x: p1.x - cx, y: p1.y - cy };
+      const q2 = { x: p2.x - cx, y: p2.y - cy };
+      const colors = { short: COLOR_SUB, long: COLOR_SUB, hyp: COLOR_SUB };
+      colors[pat.red] = COLOR_MAIN;
+      const edges = [
+        { x1: q0.x, y1: q0.y, x2: q1.x, y2: q1.y, color: colors.short },
+        { x1: q0.x, y1: q0.y, x2: q2.x, y2: q2.y, color: colors.long },
+        { x1: q1.x, y1: q1.y, x2: q2.x, y2: q2.y, color: colors.hyp }
+      ];
+      edges.forEach(L => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", L.x1);
+        line.setAttribute("y1", L.y1);
+        line.setAttribute("x2", L.x2);
+        line.setAttribute("y2", L.y2);
+        line.setAttribute("stroke", L.color);
+        line.setAttribute("stroke-width", 10);
+        line.setAttribute("stroke-linecap", "round");
+        gShape.appendChild(line);
+      });
+      const s = 35;
+      const rightMark = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rightMark.setAttribute("x", q0.x);
+      rightMark.setAttribute("y", q0.y);
+      rightMark.setAttribute("width", s);
+      rightMark.setAttribute("height", s);
+      rightMark.setAttribute("fill", "none");
+      rightMark.setAttribute("stroke", COLOR_MAIN);
+      rightMark.setAttribute("stroke-width", "5");
+      rightMark.setAttribute("rx", "8");
+      gShape.appendChild(rightMark);
+      angle += 30 + Math.floor(Math.random() * 300);
+      gShape.setAttribute("transform", `rotate(${angle})`);
+      const rq0 = rotatePoint(q0.x, q0.y, angle);
+      const rq1 = rotatePoint(q1.x, q1.y, angle);
+      const rq2 = rotatePoint(q2.x, q2.y, angle);
+      placeAngleLabel(gLabel, rq1.x, rq1.y, rq0.x, rq0.y, rq2.x, rq2.y, angles[1]);
+      placeAngleLabel(gLabel, rq2.x, rq2.y, rq0.x, rq0.y, rq1.x, rq1.y, angles[0]);
+      svg.dataset.answer = pat.answer;
+    }
+
+    // 効果音
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playCorrect() {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.connect(gain).connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+      osc.frequency.setValueAtTime(880, now);
+      gain.gain.setValueAtTime(0.4, now);
+      osc.frequency.setValueAtTime(1320, now + 0.12);
+      gain.gain.setValueAtTime(0.4, now + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    }
+    function playWrong() {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "square";
+      osc.connect(gain).connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+      osc.frequency.setValueAtTime(220, now);
+      gain.gain.setValueAtTime(0.4, now);
+      osc.frequency.setValueAtTime(110, now + 0.1);
+      gain.gain.setValueAtTime(0.4, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.start(now);
+      osc.stop(now + 0.4);
+    }
+
+    // 数学関数
+    function normalize(v) {
+      const len = Math.hypot(v.x, v.y);
+      return { x: v.x / len, y: v.y / len };
+    }
+    function rotatePoint(x, y, angleDeg) {
+      const rad = angleDeg * Math.PI / 180;
+      return {
+        x: x * Math.cos(rad) - y * Math.sin(rad),
+        y: x * Math.sin(rad) + y * Math.cos(rad)
+      };
+    }
+
+    // 角度ラベル
+    function placeAngleLabel(gLabel, px, py, ax, ay, bx, by, text) {
+      const v1 = { x: ax - px, y: ay - py };
+      const v2 = { x: bx - px, y: by - py };
+      const n1 = normalize(v1);
+      const n2 = normalize(v2);
+      const bis = normalize({ x: n1.x + n2.x, y: n1.y + n2.y });
+      const L = 55;
+      const lx = px + bis.x * L;
+      const ly = py + bis.y * L;
+      const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      t.setAttribute("x", lx);
+      t.setAttribute("y", ly + 8);
+      t.setAttribute("font-size", "32");
+      t.setAttribute("font-weight", "bold");
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("fill", "black");
+      t.textContent = text;
+      gLabel.appendChild(t);
+    }
+  </script>
+</body>
+</html>
