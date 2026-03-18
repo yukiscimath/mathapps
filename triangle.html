@@ -12,14 +12,14 @@
     }
 
     h1 {
-      color: #4DB7FF;
+      color: #004488;
       text-shadow: 1px 1px 0 white;
       font-size: 4em;
       margin-bottom: 20px;
     }
 
     h2 {
-      color: #4DB7FF;
+      color: #004488;
       text-shadow: 1px 1px 0 white;
       font-size: 2em;
       margin-bottom: 20px;
@@ -36,7 +36,8 @@
     .btn {
       padding: 12px 24px;
       margin: 10px;
-      font-size: 18px;
+      min-width: 5em;
+      font-size: 22px;
       border-radius: 12px;
       background: #DFF2FF;
       border: 2px solid #7CCBFF;
@@ -51,15 +52,20 @@
     }
 
     #timer{
-      color: #4DB7FF;
+      color: #004488;
       text-shadow: 1px 1px 0 white;
-      font-size: 2em;
+      font-size: 3em;
+    }
+
+    #line{
+      color: #4DB7FF;
+      background-color: #AADAFF;
     }
   </style>
 </head>
 <body>
   <h1>△△きまぐれ三角定規△△</h1>
-  <h2>最も短い辺の長さを1とするとき、色のついた辺の長さを答えなさい。</h2>
+  <h2>最も短い辺の長さを1とするとき、<span style="color: #ff4444">赤い辺</span>の長さを答えなさい。</h2>
   <table style="margin: 0 auto;">
     <tr>
       <td>
@@ -81,8 +87,9 @@
   <p id="answer"></p>
 
   <script>
-    const COLOR_MAIN = "#4DB7FF";
-    const COLOR_SUB = "#AFCBEF";
+    const COLOR_MAIN = "#FF4444";
+    const COLOR_SUB = "#AADAFF";
+    const COLOR_SQUARE = "#888888";
     const TRI_SIZE = 200;
     const patterns = [
       { answer:  "1", type: "45", red: "short" },
@@ -198,7 +205,7 @@
       rightMark.setAttribute("width", s);
       rightMark.setAttribute("height", s);
       rightMark.setAttribute("fill", "none");
-      rightMark.setAttribute("stroke", COLOR_MAIN);
+      rightMark.setAttribute("stroke", COLOR_SQUARE);
       rightMark.setAttribute("stroke-width", "5");
       rightMark.setAttribute("rx", "8");
       gShape.appendChild(rightMark);
